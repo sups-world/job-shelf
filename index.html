@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Job Tracker</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <h1 class="logo">Job Tracker</h1>
+      </div>
+      <div class="header-right">
+        <button id="theme-toggle" class="btn btn-icon" title="Toggle theme" aria-label="Toggle theme">
+          <span class="icon-sun">☀️</span>
+          <span class="icon-moon">🌙</span>
+        </button>
+        <label class="btn btn-secondary" for="import-file">
+          Import
+          <input type="file" id="import-file" accept=".json" hidden />
+        </label>
+        <button id="export-btn" class="btn btn-secondary">Export</button>
+        <button id="add-job-btn" class="btn btn-primary">+ Add Job</button>
+      </div>
+    </header>
+
+    <!-- Controls -->
+    <section class="controls">
+      <div class="search-box">
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Search by company name..."
+          aria-label="Search by company name"
+        />
+      </div>
+
+      <div class="filters">
+        <select id="status-filter" aria-label="Filter by status">
+          <option value="all">All Statuses</option>
+          <option value="applied">Applied</option>
+          <option value="screening">Screening</option>
+          <option value="interview">Interview</option>
+          <option value="offer">Offer</option>
+          <option value="rejected">Rejected</option>
+          <option value="ghosted">Ghosted</option>
+          <option value="withdrawn">Withdrawn</option>
+        </select>
+
+        <select id="sort-select" aria-label="Sort by date">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Bulk Actions (shown when items are selected) -->
+    <div id="bulk-actions" class="bulk-actions hidden">
+      <span id="selected-count">0 selected</span>
+      <button id="bulk-delete-btn" class="btn btn-danger btn-sm">Delete Selected</button>
+      <button id="clear-selection-btn" class="btn btn-secondary btn-sm">Clear</button>
+    </div>
+
+    <!-- Job List -->
+    <main class="job-list-container">
+      <div id="job-list" class="job-list">
+        <!-- Job cards will be rendered here by JS -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="empty-state hidden">
+        <div class="empty-icon">📋</div>
+        <h2>No jobs yet</h2>
+        <p>Start tracking your applications by adding your first job.</p>
+        <button id="empty-add-btn" class="btn btn-primary">+ Add Job</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Add / Edit Job Modal -->
+  <div id="job-modal" class="modal hidden" role="dialog" aria-labelledby="job-modal-title">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="job-modal-title">Add Job</h2>
+        <button class="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <form id="job-form" class="modal-body">
+        <input type="hidden" id="job-id" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="company-name">Company Name <span class="required">*</span></label>
+            <input type="text" id="company-name" required />
+          </div>
+          <div class="form-group">
+            <label for="job-title">Job Title <span class="required">*</span></label>
+            <input type="text" id="job-title" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="status">Status <span class="required">*</span></label>
+            <select id="status" required>
+              <option value="applied">Applied</option>
+              <option value="screening">Screening</option>
+              <option value="interview">Interview</option>
+              <option value="offer">Offer</option>
+              <option value="rejected">Rejected</option>
+              <option value="ghosted">Ghosted</option>
+              <option value="withdrawn">Withdrawn</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="date-applied">Date Applied <span class="required">*</span></label>
+            <input type="date" id="date-applied" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="location">Location</label>
+            <input type="text" id="location" placeholder="Remote / City" />
+          </div>
+          <div class="form-group">
+            <label for="salary">Salary</label>
+            <input type="text" id="salary" placeholder="e.g. $80k - $100k" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="company-website">Company Website</label>
+            <input type="url" id="company-website" placeholder="https://" />
+          </div>
+          <div class="form-group">
+            <label for="job-link">Job Link</label>
+            <input type="url" id="job-link" placeholder="https://" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="contact-person">Contact Person</label>
+            <input type="text" id="contact-person" />
+          </div>
+          <div class="form-group">
+            <label for="contact-email">Contact Email</label>
+            <input type="email" id="contact-email" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Notes</label>
+          <textarea id="notes" rows="4" placeholder="Interview notes, next steps..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="job-form-submit">Save Job</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- View Job Modal -->
+  <div id="view-modal" class="modal hidden" role="dialog" aria-labelledby="view-modal-title">
+    <div class="modal-overlay"></div>
+    <div class="modal-content modal-content-md">
+      <div class="modal-header">
+        <h2 id="view-modal-title">Job Details</h2>
+        <button class="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" id="view-modal-body">
+        <!-- Filled by JS -->
+      </div>
+      <div class="modal-footer">
+        <button id="view-delete-btn" class="btn btn-danger">Delete</button>
+        <button id="view-edit-btn" class="btn btn-primary">Edit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="delete-modal" class="modal hidden" role="dialog" aria-labelledby="delete-modal-title">
+    <div class="modal-overlay"></div>
+    <div class="modal-content modal-content-sm">
+      <div class="modal-header">
+        <h2 id="delete-modal-title">Confirm Delete</h2>
+        <button class="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="delete-message">Are you sure you want to delete this job application? This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary modal-cancel">Cancel</button>
+        <button id="confirm-delete-btn" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
