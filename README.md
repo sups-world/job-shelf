@@ -1,4 +1,4 @@
-# Job Tracker
+# Job Shelf
 
 A clean, modern job application tracker built with pure **HTML**, **CSS**, and **JavaScript**.
 
